@@ -1,11 +1,11 @@
 % This program will categorize frames in tiff stacks and save predictions and scores.
 % Usage:
 % Load in neural network variable-nunchucknet7s is latest one
-% Make sure you have a folder titled “NNStacks” in directory
+% Make sure you have a folder titled â€œNNStacksâ€ in directory
 % Add movies (and any ignore files) that you want to analyze to the folder (no limit on number of movies)
 % Run program
 % Mac user caveat:
-% Change all “/” to “/” 
+% Change all â€œ/â€ to â€œ/â€ 
 
 clc
 tic
