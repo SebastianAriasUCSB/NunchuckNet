@@ -3,6 +3,7 @@ close
 
 tic
 
+%This portion is to create and display a single nunchuck with the specified angle
 %{
 angle=180*rand
 image=nunImage(angle);
@@ -11,6 +12,7 @@ imshow(image)
 
 %}
 
+%This portion creates the folders and a pecific number of nunchucks with random angles
 
 N=5 %number of images per angle that will be made
 binSize=5 %angle bin size
