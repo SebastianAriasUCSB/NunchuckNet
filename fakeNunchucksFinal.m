@@ -24,7 +24,7 @@ for i=1:numOfBins%numOfAngles
     parfor j=1:N
     angle=(i-1)*binSize+(binSize/2)+binSize*rand-binSize/2-180;
     image=nunImage(angle);
-    savePath=strcat('FakeNunchuckImages/',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'/',num2str(j),')',num2str(-angle),'.tif'); %path to where the image will be saved
+    savePath=strcat('FakeNunchuckImages/',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'/',num2str(j),')',num2str(-angle),'.tif'); %path where the image will be saved
     imwrite(image,savePath); %writes image to right folder
     end
 end
@@ -43,17 +43,15 @@ strcat(num2str(N*numOfBins),' images in: ',num2str(toc/60),' mins')
 function out=nunImage(nunchuckAngle)
 image=zeros(200,'uint8'); %blank canavas for 8bit image 
 
-%nunchuckAngle=180*rand
-
 [image,center]=nunchuck(image,nunchuckAngle); %creates a nunchuck on the image
 
-image=backTube(image,center);
+image=backTube(image,center); %adds background tubes
 
 image=diffusion(image); %applies diffusion to image in order to make it less jagged
 
-image=noise(image); %adds noise to image
+image=noise(image); %adds noise to image 
 
-image=reformatImages(image);
+image=reformatImages(image); %necessary for training
 
 out=image;
 
@@ -70,7 +68,7 @@ angleNun=180-angleNun; %switched how the angle is defined
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=randi(30,'uint8')+uint8(30); %brightness for the second arm
 image2=arm(image,angleArm,brightness,25,center); %creates the new arm at desired angle
-    %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
+    %the dimmer arm has a smaller minimum length -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
 
