@@ -114,7 +114,7 @@ out=image;
 
 end 
 
-
+%{
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
@@ -145,6 +145,7 @@ end
 out=image;
 
 end
+%}
 
 function out=diffusion(P)
 %solves the 2D diffusion equation to spread out the nunchuck
@@ -230,6 +231,44 @@ function out=reformatImages(img)
     img(201:227,201:227)=uint8(0);
     img = cat(3, img, img, img);
     out=img;
+end
+
+
+function out=arm(image,angleInitial,brightness,size,center)
+
+point=center; %center of nunchuck
+length=70*rand+size; %size of arm-depending on input and random variable
+angle=angleInitial;%initial angle of the arm-input
+
+%from Amber's filament simulation program
+n_steps=round(length)-1;%number of pixels
+sigma_i=3.7;%the sigma of the Gaussian distribution from which we draw bend angle of each step
+
+theta_i=normrnd(0,sigma_i,[1,n_steps]);
+theta_i(1)=angle;
+
+running_sum=cumsum(theta_i);%the cumulative sum of angles for each filament
+x=zeros(1,n_steps);%make empty arrays for storing x and y coordinates for random walks
+y=zeros(1,n_steps);
+
+for i=1:n_steps
+    if i==1
+        x=point(1)+cosd(running_sum(i));
+        y=point(2)+sind(running_sum(i));
+    else
+        x(i)=x(i-1)+cosd(running_sum(i));
+        y(i)=y(i-1)+sind(running_sum(i));
+    end
+    
+    if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
+        continue
+    end
+    if round(x(i))-1<1 || round(x(i))+1>200 || round(y(i))-1<1 || round(y(i))+1>200
+        break
+    end
+    image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightness);%marks a 2x2 area at next point with input brightness
+end
+out=image;
 end
 
 %{
