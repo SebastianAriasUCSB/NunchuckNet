@@ -7,7 +7,7 @@ tic
 angle=180*rand
 image=nunImage(angle);
 imshow(image)
-%imwrite(image,'D:\Documents\Research\Fygenson Lab Stuff\Post-Florida\NeuralNetworks\0tests\angletest.tif'); %writes image to right folder
+%imwrite(image,'D:/Documents/Research/Fygenson Lab Stuff/Post-Florida/NeuralNetworks/0tests/angletest.tif'); %writes image to right folder
 
 %}
 
@@ -23,9 +23,10 @@ for i=1:numOfBins%numOfAngles
     parfor j=1:N
     angle=(i-1)*binSize+(binSize/2)+binSize*rand-binSize/2-180;
     image=nunImage(angle);
-    savePath=strcat('FakeNunchuckImages\',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'\',num2str(j),')',num2str(-angle),'.tif'); %path to where the image will be saved
+    savePath=strcat('FakeNunchuckImages/',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'/',num2str(j),')',num2str(-angle),'.tif'); %path to where the image will be saved
     imwrite(image,savePath); %writes image to right folder
     end
+    disp(strcat(num2str((i/numOfBins)*100),"% Completed"))
 end
 
 
@@ -224,7 +225,7 @@ mkdir FakeNunchuckImages %makes inital folder
 for i=1:numOfFolders
     angle=(i-1)*binSize+(binSize/2)-180; %so that folder name is in the middle of the bin
     %disp(angle)
-    folderData=['FakeNunchuckImages\' num2str(angle)]; %path of new folder with name
+    folderData=['FakeNunchuckImages/' num2str(angle)]; %path of new folder with name
     mkdir(folderData)
 end
 end
