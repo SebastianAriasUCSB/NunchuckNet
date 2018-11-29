@@ -3,7 +3,6 @@ close
 
 tic
 
-%This portion is to create and display a single nunchuck with the specified angle
 %{
 angle=180*rand
 image=nunImage(angle);
@@ -12,9 +11,9 @@ imshow(image)
 
 %}
 
-%This portion creates the folders and a pecific number of nunchucks with random angles
 
-N=5 %number of images per angle that will be made
+
+N=10000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
 
@@ -24,7 +23,7 @@ for i=1:numOfBins%numOfAngles
     parfor j=1:N
     angle=(i-1)*binSize+(binSize/2)+binSize*rand-binSize/2-180;
     image=nunImage(angle);
-    savePath=strcat('FakeNunchuckImages/',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'/',num2str(j),')',num2str(-angle),'.tif'); %path where the image will be saved
+    savePath=strcat('FakeNunchuckImages\',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'\',num2str(j),')',num2str(-angle),'.tif'); %path to where the image will be saved
     imwrite(image,savePath); %writes image to right folder
     end
 end
@@ -43,15 +42,17 @@ strcat(num2str(N*numOfBins),' images in: ',num2str(toc/60),' mins')
 function out=nunImage(nunchuckAngle)
 image=zeros(200,'uint8'); %blank canavas for 8bit image 
 
+%nunchuckAngle=180*rand
+
 [image,center]=nunchuck(image,nunchuckAngle); %creates a nunchuck on the image
 
-image=backTube(image,center); %adds background tubes
+image=backTube(image,center);
 
 image=diffusion(image); %applies diffusion to image in order to make it less jagged
 
-image=noise(image); %adds noise to image 
+image=noise(image); %adds noise to image
 
-image=reformatImages(image); %necessary for training
+image=reformatImages(image);
 
 out=image;
 
@@ -62,13 +63,14 @@ function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 
 center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
-brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
+%brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
+brightness=randi(140,'uint8')+uint8(60);
 image1=arm(image,angleArm,brightness,35,center); %draws first arm
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
-brightness=randi(30,'uint8')+uint8(30); %brightness for the second arm
+brightness=brightness/2; %brightness for the second arm should be half of brighter arm
 image2=arm(image,angleArm,brightness,25,center); %creates the new arm at desired angle
-    %the dimmer arm has a smaller minimum length -last two numbers-to recreate single labeled arm
+    %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
 
@@ -114,7 +116,7 @@ out=image;
 
 end 
 
-%{
+
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
@@ -145,7 +147,6 @@ end
 out=image;
 
 end
-%}
 
 function out=diffusion(P)
 %solves the 2D diffusion equation to spread out the nunchuck
@@ -180,9 +181,13 @@ end
 function out=noise(image)
 
 %next loop adds a random value (20-30) to each pixel to simulate noise
+noiseLevel=randi(20,'uint8')+20;
+noiseBaseline=randi(noiseLevel/2,'uint8')+noiseLevel/3;
+%noiseBaseline=noiseLevel/3
 for i=1:200
     for j=1:200
-        image(i,j)=image(i,j)+randi(40,'uint8')+uint8(40);
+        %image(i,j)=image(i,j)+randi(40,'uint8')+uint8(40);
+        image(i,j)=image(i,j)+randi(noiseLevel,'uint8')+uint8(noiseBaseline);
     end 
 end
 
@@ -191,9 +196,6 @@ end
 brightnessIncrease=uint8(40*rand); %random amount that each pixel will be increased by
 for i=1:200
     for j=1:200
-        if image(i,j)+brightnessIncrease>255 %does not let a pixel get over 255
-            continue
-        end
         image(i,j)=image(i,j)+brightnessIncrease;
     end 
 end
@@ -222,7 +224,7 @@ mkdir FakeNunchuckImages %makes inital folder
 for i=1:numOfFolders
     angle=(i-1)*binSize+(binSize/2)-180; %so that folder name is in the middle of the bin
     %disp(angle)
-    folderData=['FakeNunchuckImages/' num2str(angle)]; %path of new folder with name
+    folderData=['FakeNunchuckImages\' num2str(angle)]; %path of new folder with name
     mkdir(folderData)
 end
 end
@@ -234,6 +236,7 @@ function out=reformatImages(img)
 end
 
 
+%{
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
@@ -270,6 +273,8 @@ for i=1:n_steps
 end
 out=image;
 end
+
+%}
 
 %{
 Things of note:
