@@ -66,11 +66,11 @@ center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
 %brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
 brightness=randi(140,'uint8')+uint8(60);
-image1=arm(image,angleArm,brightness,35,center); %draws first arm
+image1=arm(image,angleArm,brightness,15,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,25,center); %creates the new arm at desired angle
+image2=arm(image,angleArm,brightness,15,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
@@ -103,7 +103,7 @@ while luck==1
         angleArm=findAngle(center,nunCenter)-350*rand-5;
         %image(center(2)-1:center(2)+1,center(1)-1:center(1)+1)=uint8(255);
         brightness=100*rand+30;
-        size=rand*35;
+        size=rand*15; (originally 15)
         image=arm(image,angleArm,brightness,size,center);
     else
         luck=0;
@@ -117,7 +117,7 @@ out=image;
 
 end 
 
-
+%{
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
@@ -148,6 +148,7 @@ end
 out=image;
 
 end
+%}
 
 function out=diffusion(P)
 %solves the 2D diffusion equation to spread out the nunchuck
@@ -237,7 +238,7 @@ function out=reformatImages(img)
 end
 
 
-%{
+
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
