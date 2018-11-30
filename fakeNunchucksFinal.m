@@ -103,7 +103,7 @@ while luck==1
         angleArm=findAngle(center,nunCenter)-350*rand-5;
         %image(center(2)-1:center(2)+1,center(1)-1:center(1)+1)=uint8(255);
         brightness=100*rand+30;
-        size=rand*15; (originally 15)
+        size=rand*15; %(originally 15)
         image=arm(image,angleArm,brightness,size,center);
     else
         luck=0;
