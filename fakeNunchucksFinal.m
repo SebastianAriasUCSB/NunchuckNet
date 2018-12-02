@@ -147,7 +147,7 @@ for i=1:length
     image(round(point(2))-1:round(point(2))+1,round(point(1))-1:round(point(1))+1)=uint8(brightness);
     %marks a 2x2 area at next point with input brightness
 
-    if (rand<0.05) %chance that it will happen
+    if (rand<0.03) %chance that it will happen
         biasChange=(2*rand-1);
         if abs(angleBias+biasChange)>3.5
             continue
