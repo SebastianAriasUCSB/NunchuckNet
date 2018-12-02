@@ -68,11 +68,11 @@ center=[round((40*rand+80)*4),round((40*rand+80)*4)]; %randomized center (40x40 
 angleArm=360*rand; %intial angle at which first arm will come out
 %brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
 brightness=randi(140,'uint8')+uint8(60);
-image1=arm(image,angleArm,brightness,60,center); %draws first arm (originally 35)
+image1=arm(image,angleArm,brightness,15,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,60,center); %creates the new arm at desired angle (originally 25)
+image2=arm(image,angleArm,brightness,15,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
