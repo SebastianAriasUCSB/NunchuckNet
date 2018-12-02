@@ -117,11 +117,11 @@ out=image;
 
 end 
 
-%{
+
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
-length=30*rand+size; %size of arm-depending on input and random variable
+length=50*rand+size; %size of arm-depending on input and random variable
 %image(point(2)-1:point(2)+1,point(1)-1:point(1)+1)=uint8(brightness); 
     %-does not mark the center of the nunchuck
 angle=angleInitial;%initial angle of the arm-input
@@ -144,6 +144,10 @@ for i=1:length
     end
     image(round(point(2))-1:round(point(2))+1,round(point(1))-1:round(point(1))+1)=uint8(brightness);
     %marks a 2x2 area at next point with input brightness
+
+    if (rand<0.25)
+        angleBias=2*rand-1 %possibility for arm curvature to change 
+    end
 end
 out=image;
 
@@ -238,6 +242,7 @@ function out=reformatImages(img)
 end
 
 
+%{
 
 function out=arm(image,angleInitial,brightness,size,center)
 
