@@ -267,7 +267,7 @@ for i=1:n_steps
         y(i)=y(i-1)+sind(running_sum(i));
     end
     
-    if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
+    if i==1 | i==2 %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
     end
     if round(x(i))-4<1 || round(x(i))+4>800 || round(y(i))-4<1 || round(y(i))+4>800
