@@ -148,7 +148,7 @@ for i=1:length
     %marks a 2x2 area at next point with input brightness
 
     if (rand<0.05) %chance that it will happen
-        biasChange=(4*rand-2)
+        biasChange=(3*rand-1.5);
         if abs(angleBias+biasChange)>3.5
             continue
         end
