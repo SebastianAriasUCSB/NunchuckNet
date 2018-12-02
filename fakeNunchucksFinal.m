@@ -53,7 +53,7 @@ image=diffusion(image); %applies diffusion to image in order to make it less jag
 
 image=noise(image); %adds noise to image
 
-image=reformatImages(image);
+%image=reformatImages(image);
 
 out=image;
 
@@ -271,7 +271,7 @@ for i=1:n_steps
     if round(x(i))-1<1 || round(x(i))+1>200 || round(y(i))-1<1 || round(y(i))+1>200
         break
     end
-    image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightness);%marks a 2x2 area at next point with input brightness
+    image(round(y(i))-8:round(y(i))+8,round(x(i))-8:round(x(i))+8)=uint8(brightness);%marks a 2x2 area at next point with input brightness
 end
 out=image;
 end
