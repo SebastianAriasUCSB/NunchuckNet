@@ -3,7 +3,7 @@ close
 
 tic
 
-%{
+
 angle=180*rand
 image=nunImage(angle);
 imshow(image)
@@ -12,7 +12,7 @@ imshow(image)
 %}
 
 
-
+%{
 N=10000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
@@ -41,13 +41,13 @@ strcat(num2str(N*numOfBins),' images in: ',num2str(toc/60),' mins')
 
 %________________________FUNCTIONS_______________________________
 function out=nunImage(nunchuckAngle)
-image=zeros(200,'uint8'); %blank canavas for 8bit image 
+image=zeros(800,'uint8'); %blank canavas for 8bit image 
 
 %nunchuckAngle=180*rand
 
 [image,center]=nunchuck(image,nunchuckAngle); %creates a nunchuck on the image
 
-image=backTube(image,center);
+%image=backTube(image,center);
 
 image=diffusion(image); %applies diffusion to image in order to make it less jagged
 
@@ -62,15 +62,15 @@ end
 
 function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 
-center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
+center=[round((40*rand+80)*4),round((40*rand+80)*4)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
 %brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
 brightness=randi(140,'uint8')+uint8(60);
-image1=arm(image,angleArm,brightness,15,center); %draws first arm (originally 35)
+image1=arm(image,angleArm,brightness,60,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,15,center); %creates the new arm at desired angle (originally 25)
+image2=arm(image,angleArm,brightness,60,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
@@ -93,7 +93,7 @@ while luck==1
         num=num+1;
         %center=[79,79];
         luck=1;
-        center=[round(200*rand),round(200*rand)]; %randomized center
+        center=[round((200*rand)),round(200*rand)]; %randomized center
         while center(1)<120 && center(1)>80
             center(1)=round(200*rand); %randomized center
         end
@@ -162,8 +162,8 @@ P=im2double(P); %converts imnage to double in order to make the calculations
 PNew=P; %douplicates image
 
 for k=1:Nt %time loop
-    for i=2:199 %space loops
-        for j=2:199
+    for i=2:799 %space loops
+        for j=2:799
             %if(ismember([j i],dots ,'rows')==1)
              %   continue
             %end
@@ -186,8 +186,8 @@ function out=noise(image)
 noiseLevel=randi(20,'uint8')+20;
 noiseBaseline=randi(noiseLevel/2,'uint8')+noiseLevel/3;
 %noiseBaseline=noiseLevel/3
-for i=1:200
-    for j=1:200
+for i=1:800
+    for j=1:800
         %image(i,j)=image(i,j)+randi(40,'uint8')+uint8(40);
         image(i,j)=image(i,j)+randi(noiseLevel,'uint8')+uint8(noiseBaseline);
     end 
@@ -196,8 +196,8 @@ end
 %next loop will increase each pixel to simulate differences in image
 %brightness
 brightnessIncrease=uint8(40*rand); %random amount that each pixel will be increased by
-for i=1:200
-    for j=1:200
+for i=1:800
+    for j=1:800
         image(i,j)=image(i,j)+brightnessIncrease;
     end 
 end
@@ -242,7 +242,7 @@ end
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
-length=70*rand+size; %size of arm-depending on input and random variable
+length=(70*rand+size)*4; %size of arm-depending on input and random variable
 angle=angleInitial;%initial angle of the arm-input
 
 %from Amber's filament simulation program
