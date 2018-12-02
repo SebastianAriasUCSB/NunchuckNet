@@ -148,7 +148,11 @@ for i=1:length
     %marks a 2x2 area at next point with input brightness
 
     if (rand<0.05) %chance that it will happen
-        angleBias=angleBias+(4*rand-2); %possibility for arm curvature to change 
+        biasChange=(4*rand-2)
+        if abs(angleBias+biasChange)>3.5
+            continue
+        end
+        angleBias=angleBias+biasChange; %possibility for arm curvature to change 
         disp(strcat(num2str(i/length),") NewBias=",num2str(angleBias)))
     end
 end
