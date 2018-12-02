@@ -249,7 +249,7 @@ angle=angleInitial;%initial angle of the arm-input
 
 %from Amber's filament simulation program
 n_steps=round(length)-1;%number of pixels
-sigma_i=3.7;%the sigma of the Gaussian distribution from which we draw bend angle of each step
+sigma_i=3.7/3;%the sigma of the Gaussian distribution from which we draw bend angle of each step
 
 theta_i=normrnd(0,sigma_i,[1,n_steps]);
 theta_i(1)=angle;
