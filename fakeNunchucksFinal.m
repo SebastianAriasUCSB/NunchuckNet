@@ -244,7 +244,7 @@ end
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
-length=(50*rand+size)*4; %size of arm-depending on input and random variable
+length=(60*rand+size)*4; %size of arm-depending on input and random variable
 angle=angleInitial;%initial angle of the arm-input
 
 %from Amber's filament simulation program
