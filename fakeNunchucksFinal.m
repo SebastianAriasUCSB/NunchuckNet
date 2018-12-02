@@ -67,7 +67,7 @@ function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 center=[round((40*rand+80)*4),round((40*rand+80)*4)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
 %brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
-brightness=randi(190,'uint8')+uint8(60);
+brightness=randi(195,'uint8')+uint8(60);
 image1=arm(image,angleArm,brightness,15,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
@@ -267,7 +267,7 @@ for i=1:n_steps
         y(i)=y(i-1)+sind(running_sum(i));
     end
     
-    if i==1 || i==2 || i==3 || i==4 || i==5 || i==6  %does not mark first point to create the characteristic void in the middle of the nunchuck
+    if i==1 || i==2 || i==3 || i==4   %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
     end
     if round(x(i))-4<1 || round(x(i))+4>800 || round(y(i))-4<1 || round(y(i))+4>800
