@@ -120,6 +120,8 @@ end
 
 function out=arm(image,angleInitial,brightness,size,center)
 
+    disp("____________________________")
+
 point=center; %center of nunchuck
 length=70*rand+size; %size of arm-depending on input and random variable
 %image(point(2)-1:point(2)+1,point(1)-1:point(1)+1)=uint8(brightness); 
@@ -146,8 +148,8 @@ for i=1:length
     %marks a 2x2 area at next point with input brightness
 
     if (rand<0.10) %chance that it will happen
-        disp("bias change")
-        angleBias=angleBias+(1*rand-0.5) %possibility for arm curvature to change 
+        angleBias=angleBias+(1*rand-0.5); %possibility for arm curvature to change 
+        disp(strcat("NewBias=",num2str(angleBias)))
     end
 end
 out=image;
