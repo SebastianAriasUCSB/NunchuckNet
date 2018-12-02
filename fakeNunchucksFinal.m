@@ -270,7 +270,7 @@ for i=1:n_steps
     if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
     end
-    if round(x(i))-1<1 || round(x(i))+1>800 || round(y(i))-1<1 || round(y(i))+1>800
+    if round(x(i))-1<1 || round(x(i))+4>800 || round(y(i))-1<1 || round(y(i))+4>800
         break
     end
     image(round(y(i))-4:round(y(i))+4,round(x(i))-4:round(x(i))+4)=uint8(brightness);%marks a 2x2 area at next point with input brightness
