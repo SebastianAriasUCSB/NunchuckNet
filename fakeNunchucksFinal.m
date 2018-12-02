@@ -147,9 +147,9 @@ for i=1:length
     image(round(point(2))-1:round(point(2))+1,round(point(1))-1:round(point(1))+1)=uint8(brightness);
     %marks a 2x2 area at next point with input brightness
 
-    if (rand<0.03) %chance that it will happen
+    if (rand<0.05) %chance that it will happen
         angleBias=angleBias+(4*rand-2); %possibility for arm curvature to change 
-        disp(strcat(num2str(i/length),"NewBias=",num2str(angleBias)))
+        disp(strcat(num2str(i/length),") NewBias=",num2str(angleBias)))
     end
 end
 out=image;
