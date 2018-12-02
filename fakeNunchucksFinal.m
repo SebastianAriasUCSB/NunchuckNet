@@ -49,6 +49,8 @@ image=zeros(800,'uint8'); %blank canavas for 8bit image
 
 %image=backTube(image,center);
 
+image=imresize(image,0.25);
+
 image=diffusion(image); %applies diffusion to image in order to make it less jagged
 
 image=noise(image); %adds noise to image
@@ -162,8 +164,8 @@ P=im2double(P); %converts imnage to double in order to make the calculations
 PNew=P; %douplicates image
 
 for k=1:Nt %time loop
-    for i=2:799 %space loops
-        for j=2:799
+    for i=2:199 %space loops
+        for j=2:199
             %if(ismember([j i],dots ,'rows')==1)
              %   continue
             %end
@@ -186,8 +188,8 @@ function out=noise(image)
 noiseLevel=randi(20,'uint8')+20;
 noiseBaseline=randi(noiseLevel/2,'uint8')+noiseLevel/3;
 %noiseBaseline=noiseLevel/3
-for i=1:800
-    for j=1:800
+for i=1:200
+    for j=1:200
         %image(i,j)=image(i,j)+randi(40,'uint8')+uint8(40);
         image(i,j)=image(i,j)+randi(noiseLevel,'uint8')+uint8(noiseBaseline);
     end 
@@ -196,8 +198,8 @@ end
 %next loop will increase each pixel to simulate differences in image
 %brightness
 brightnessIncrease=uint8(40*rand); %random amount that each pixel will be increased by
-for i=1:800
-    for j=1:800
+for i=1:200
+    for j=1:200
         image(i,j)=image(i,j)+brightnessIncrease;
     end 
 end
@@ -268,10 +270,10 @@ for i=1:n_steps
     if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
     end
-    if round(x(i))-1<1 || round(x(i))+1>200 || round(y(i))-1<1 || round(y(i))+1>200
+    if round(x(i))-1<1 || round(x(i))+1>800 || round(y(i))-1<1 || round(y(i))+1>800
         break
     end
-    image(round(y(i))-8:round(y(i))+8,round(x(i))-8:round(x(i))+8)=uint8(brightness);%marks a 2x2 area at next point with input brightness
+    image(round(y(i))-4:round(y(i))+4,round(x(i))-4:round(x(i))+4)=uint8(brightness);%marks a 2x2 area at next point with input brightness
 end
 out=image;
 end
