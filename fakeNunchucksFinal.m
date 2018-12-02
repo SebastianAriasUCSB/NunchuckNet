@@ -125,7 +125,7 @@ length=70*rand+size; %size of arm-depending on input and random variable
 %image(point(2)-1:point(2)+1,point(1)-1:point(1)+1)=uint8(brightness); 
     %-does not mark the center of the nunchuck
 angle=angleInitial;%initial angle of the arm-input
-angleBias=2*rand-1;%angle that will determine overall curvature of arm - random
+angleBias=2*rand-1 %angle that will determine overall curvature of arm - random
 pointOld=point;
 for i=1:length
     angle=angle+angleBias/2; %increments angle each iteration to create curvature
@@ -145,7 +145,7 @@ for i=1:length
     image(round(point(2))-1:round(point(2))+1,round(point(1))-1:round(point(1))+1)=uint8(brightness);
     %marks a 2x2 area at next point with input brightness
 
-    if (rand<0.05) %chance that it will happen
+    if (rand<0.01) %chance that it will happen
         angleBias=angleBias+(1*rand-0.5) %possibility for arm curvature to change 
     end
 end
