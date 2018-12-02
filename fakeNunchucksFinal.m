@@ -3,7 +3,7 @@ close
 
 tic
 
-%{
+
 angle=180*rand
 image=nunImage(angle);
 imshow(image)
@@ -12,7 +12,7 @@ imshow(image)
 %}
 
 
-
+%{
 N=10000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
