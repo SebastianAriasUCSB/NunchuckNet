@@ -121,7 +121,7 @@ end
 function out=arm(image,angleInitial,brightness,size,center)
 
 point=center; %center of nunchuck
-length=50*rand+size; %size of arm-depending on input and random variable
+length=70*rand+size; %size of arm-depending on input and random variable
 %image(point(2)-1:point(2)+1,point(1)-1:point(1)+1)=uint8(brightness); 
     %-does not mark the center of the nunchuck
 angle=angleInitial;%initial angle of the arm-input
