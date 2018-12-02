@@ -26,7 +26,13 @@ for i=1:numOfBins%numOfAngles
     savePath=strcat('FakeNunchuckImages/',num2str(-1*((i-1)*binSize+(binSize/2)-180)),'/',num2str(j),')',num2str(-angle),'.tif'); %path to where the image will be saved
     imwrite(image,savePath); %writes image to right folder
     end
-    disp(strcat(num2str((i/numOfBins)*100),"% Completed"))
+        
+    %bar display    
+    clc
+    bi=round((i/(numOfBins*2))*100)
+    bar=repmat('|',1,bi);
+    %disp(bar,num2str((i/72)*100))
+    disp(strcat(bar,'   ',round(num2str((i/numOfBins)*100),3),"%"))
 end
 
 
