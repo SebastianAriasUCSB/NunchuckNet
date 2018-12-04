@@ -31,8 +31,9 @@ for i=1:numOfBins%numOfAngles
     clc
     bi=round((i/(numOfBins*2))*100);
     bar=repmat('|',1,bi);
+    empbar=repmat('_',1,numOfBins-bi);
     %disp(bar,num2str((i/72)*100))
-    disp(strcat(bar,'   ',num2str(round(((i/numOfBins)*100),3)),"%"))
+    disp(strcat(bar,empbar,num2str(round(((i/numOfBins)*100),3)),"%"))
 end
 
 
