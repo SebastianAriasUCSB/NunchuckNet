@@ -29,10 +29,10 @@ for i=1:numOfBins%numOfAngles
         
     %bar display    
     clc
-    bi=round((i/(numOfBins*2))*100)
+    bi=round((i/(numOfBins*2))*100);
     bar=repmat('|',1,bi);
     %disp(bar,num2str((i/72)*100))
-    disp(strcat(bar,'   ',round(num2str((i/numOfBins)*100),3),"%"))
+    disp(strcat(bar,'   ',num2str(round(((i/numOfBins)*100),3)),"%"))
 end
 
 
