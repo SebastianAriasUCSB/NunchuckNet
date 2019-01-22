@@ -3,7 +3,7 @@ close
 
 tic
 
-%{
+
 angle=180*rand
 image=nunImage(angle);
 imshow(image)
@@ -12,8 +12,8 @@ imshow(image)
 %}
 
 
-
-N=10000 %number of images per angle that will be made
+%{
+N=3000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
 
@@ -73,11 +73,11 @@ center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
 %brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
 brightness=randi(195,'uint8')+uint8(60);
-image1=arm(image,angleArm,brightness,15,center); %draws first arm (originally 35)
+image1=arm(image,angleArm,brightness,20,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,15,center); %creates the new arm at desired angle (originally 25)
+image2=arm(image,angleArm,brightness,20,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
@@ -110,7 +110,7 @@ while luck==1
         angleArm=findAngle(center,nunCenter)-350*rand-5;
         %image(center(2)-1:center(2)+1,center(1)-1:center(1)+1)=uint8(255);
         brightness=100*rand+30;
-        size=rand*15; %(originally 15)
+        size=rand*15; %(originally 25)
         image=arm(image,angleArm,brightness,size,center);
     else
         luck=0;
@@ -246,23 +246,24 @@ end
 
 
 
-function out=arm(image,angleInitial,brightness,size,center)
+function out=arm(image,angleInitial,brightness,size,center) %Amber's arm function
 
-point=center; %center of nunchuck
-length=70*rand+size; %size of arm-depending on input and random variable
+point=[0,0];%because we must start random walk from the center before we perform the rotation
+Length=70*rand+size; %size of arm-depending on input and random variable
 angle=angleInitial;%initial angle of the arm-input
 
 %from Amber's filament simulation program
-n_steps=round(length)-1;%number of pixels
+n_steps=round(Length)-1;%number of pixels
 sigma_i=3.7;%the sigma of the Gaussian distribution from which we draw bend angle of each step
 
 theta_i=normrnd(0,sigma_i,[1,n_steps]);
-theta_i(1)=angle;
+theta_i(1)=0;
 
 running_sum=cumsum(theta_i);%the cumulative sum of angles for each filament
 x=zeros(1,n_steps);%make empty arrays for storing x and y coordinates for random walks
 y=zeros(1,n_steps);
 
+%in this for-loop, fill x and y arrays using the simulated angles
 for i=1:n_steps
     if i==1
         x=point(1)+cosd(running_sum(i));
@@ -271,7 +272,40 @@ for i=1:n_steps
         x(i)=x(i-1)+cosd(running_sum(i));
         y(i)=y(i-1)+sind(running_sum(i));
     end
-    
+end
+
+%smooth the x-y curve.
+for counter=1:30
+    x=smooth(x);y=smooth(y);
+end
+
+if length(x)<8%for "backtubes", Length could be very short, so we don't need to do this first rotation to "correct"
+    R = [cosd(angle) -sind(angle); sind(angle) cosd(angle)];%rotation matrix
+    rotated = (R*[x,y]')';
+
+    %translate the filament so it starts at the desired point.
+    x=rotated(:,1)+center(1);
+    y=rotated(:,2)+center(2);
+else
+    %now measure the inital angle
+    for i=1:3%look at three vectors each of Length 2 (or 3, between 3 neighboring dots)
+        vector=[x(i+4)-x(i+2),y(i+4)-y(i+2)];
+        initial_angle(i)=atand(vector(2)/vector(1));
+    end
+    off_angle=mean(initial_angle);%calculate the inital angle that the filament is off by
+    R = [cosd(-off_angle) -sind(-off_angle); sind(-off_angle) cosd(-off_angle)];%rotation matrix so the filament is at 0 degrees
+    rotated = (R*[x,y]')';
+
+    %rotate to achieve the desired orientation. Note the handedness.
+    R = [cosd(angle) -sind(angle); sind(angle) cosd(angle)];%rotation matrix
+    rotated_again = (R*rotated')';
+
+    %translate the filament so it starts at the desired point.
+    x=rotated_again(:,1)+center(1);
+    y=rotated_again(:,2)+center(2);
+end
+
+for i=1:n_steps 
     if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
     end
