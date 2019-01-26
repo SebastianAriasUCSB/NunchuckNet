@@ -19,43 +19,59 @@ if exist('NNStacks')==0 %Checks for the existance of NNStacks
     return
 end
 
-run(net)
+subFolderPath='NNStacks\';
+run(net,subFolderPath) %analyses stacks in NNStacks
 
-disp('________________Completed_______________________________')
-fprintf(sumFileID,'%s\n','________________Completed_______________________________');
+contents=dir('NNStacks\'); %all contents inside NNStacks including stacks and folders
+subFolders=contents([contents.isdir]);
+
+for i=1:length(subFolders)
+
+    if contains(subFolders(i).name,"Analysis") || contains(subFolders(i).name,"Split") || contains(subFolders(i).name,"Run_Summary") || strcmp(subFolders(i).name,'.') || strcmp(subFolders(i).name,'..') %skips folders that may have been created in previous runs
+        continue
+    end
+
+    if length(dir(strcat('NNStacks/',subFolders(i).name,'/*.tif*')))==0 %skips folders that don't contain tif stacks
+        continue
+    end
+
+    subFolderPath=strcat('NNStacks\',subFolders(i).name,'\');
+
+    run(net,subFolderPath)
+end
 
 time=toc;
 disp(strcat("Elapsed time: ", num2str(time/60),' mins'))
-fprintf(sumFileID,'%s\n',strcat("Elapsed time: ", num2str(time/60),' mins'));
+%fprintf(sumFileID,'%s\n',strcat("Elapsed time: ", num2str(time/60),' mins'));
 fclose('all'); %closes all opened files
 
 %
 %------------------Functions----------------------
-function [num,out]=splitStack(sumFileID)
+function [num,out]=splitStack(sumFileID,subFolderPath)
 %This function splits the stack into individual images and prepares them to
 %run though the neuralnetwork (changes resolution and type to true color)
 
-stacks=dir('NNStacks/*.tif*'); %tif stacks in the folder
+stacks=dir(strcat(subFolderPath,'*.tif*')); %tif stacks in the folder
 numStacks=length(stacks) %number of stacks in the folder
 folders=strings(1,numStacks); %contain folder names for analysis function
 
 for k=1:numStacks %will split up every stack 
     stackName=stacks(k).name; %gets the file name of the stack
     
-    stackPath = strcat(pwd,'/NNStacks/',stackName); %path of stack file
+    stackPath = strcat(pwd,'\',subFolderPath,stackName); %path of stack file
 
     endin=strfind(stackName,'.');
     folderName=strcat(stackName(1:endin-1),'Split'); %foldername based on stack name
     folders(k)=folderName;
     
-    if exist(strcat('NNStacks/', folderName))==7 %Skips if split folder is present
+    if exist(strcat(subFolderPath, folderName))==7 %Skips if split folder is present
         disp(strcat(folderName, ": Split Folder already present"))
         fprintf(sumFileID,'%s\n',strcat(folderName, ": Split Folder already present"));
         continue
     end
     
-    mkdir ('NNStacks', folderName); %folder wehere split is going to be saved to
-    folderPath=strcat(pwd,'/NNStacks/',folderName,'/'); %path to save folder
+    mkdir (subFolderPath, folderName); %folder wehere split is going to be saved to
+    folderPath=strcat(pwd,'\',subFolderPath,folderName,'\'); %path to save folder
     
     info = imfinfo(stackPath); %info about stack 
     numFrames= numel(info); %number of frames in the stack
@@ -96,10 +112,10 @@ function [predsDouble]=convertToDouble(preds)
     
     
 end
-function [predsDouble,ignoredFrames]=ignoreFramesFile(predsDouble,name,sumFileID)
+function [predsDouble,ignoredFrames]=ignoreFramesFile(predsDouble,name,sumFileID,subFolderPath)
 %This function will check and read ignore frame files
-    if exist(strcat('NNStacks/',name(1:end-5),'_ignore.txt'))==2 % if ignore file exists
-        fileID=fopen(strcat('NNStacks/',name(1:end-5),'_ignore.txt')); %opens file
+    if exist(strcat(subFolderPath,name(1:end-5),'_ignore.txt'))==2 % if ignore file exists
+        fileID=fopen(strcat(subFolderPath,name(1:end-5),'_ignore.txt')); %opens file
         ignoredFrames=fscanf(fileID,'%d'); %reads file
         disp(strcat('Ignore file found:',num2str(numel(ignoredFrames)),' frames ignored'))
         fprintf(sumFileID,'%s\n',strcat('Ignore file found:',num2str(numel(ignoredFrames)),' frames ignored'));
@@ -108,6 +124,7 @@ function [predsDouble,ignoredFrames]=ignoreFramesFile(predsDouble,name,sumFileID
         ignoredFrames=[0];
     end
 end
+
 function [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPreds(predsDouble,scores,ignoredFrames,sumFileID)
     %Next section will filter out images with low (1.5std away) scores
     clear maxScores
@@ -134,7 +151,7 @@ function [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPr
     
     for j=1:predsSize %filters out low score frames
 
-        if maxScores(j)>(nanmean(maxScores)-1.5*nanstd(maxScores))
+        if maxScores(j)>(nanmean(maxScores)-1.5*nanstd(maxScores)) %if prediction score is higher than cut off
             scoresFiltered(j)=maxScores(j); %saves values for frames with high enough scores
             predsFiltered(j)=predsDouble(j);
         else%sets excluded frames to NaN
@@ -142,7 +159,7 @@ function [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPr
             framesFiltered(excluded)=j;
             if exist('ignoredFrames')==1 %accounts for ignored frames
                 if ismember(j,ignoredFrames)==true
-                  %avoids double counting frames
+                  %avoids double counting frames (frames that are filtered and also ignored)
                     excluded=excluded-1;
                 end
             end
@@ -157,6 +174,7 @@ function [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPr
     disp(strcat(num2str(excluded),' frames excluded due to low scores'))
     fprintf(sumFileID,'%s\n',strcat(num2str(excluded),' frames excluded due to low scores'));
 end
+
 function out=saveHist(predsFiltered,name,saveFolder,path,sumFileID)
 %This function will create and save histograms for each movie
     [fit, gof] =truncFoldNorm(predsFiltered);
@@ -190,7 +208,8 @@ function out=saveHist(predsFiltered,name,saveFolder,path,sumFileID)
     
     close %closes figure so that they don't stick around
 end
-function out=runHist(runAnglesFiltered)
+
+function out=runHist(runAnglesFiltered,subFolderPath)
 %This portion will plot and save the summary histogram 
 %It will also save sumHistCounts
 
@@ -198,7 +217,7 @@ function out=runHist(runAnglesFiltered)
 
 edges=0:5:180; %for histogram
 %f=figure('visible', 'on'); %creates figure that will show up
-f=figure;
+f = figure('visible', 'off');
 hold on
 
 histogram(abs(runAnglesFiltered),edges);
@@ -213,17 +232,17 @@ str = {'Fit values:',strcat('\mu:',num2str(fit.m)),strcat('\sigma:',num2str(fit.
 annotation('textbox',dim,'String',str,'FitBoxToText','on');
 
 
-savePath=strcat(pwd,'/NNStacks/Run_Summary/RunHistogram');
+savePath=strcat(pwd,'\',subFolderPath,'Run_Summary\RunHistogram');
 saveas(f,savePath,'fig');
 saveas(f,savePath,'jpg');
 
-savePath=strcat(pwd,'/NNStacks/Run_Summary/RunAnglesFiltered');
+savePath=strcat(pwd,'\',subFolderPath,'Run_Summary/RunAnglesFiltered');
 save(savePath,'runAnglesFiltered');
 
-savePath=strcat(pwd,'/NNStacks/Run_Summary/RunFit');
+savePath=strcat(pwd,'\',subFolderPath,'Run_Summary/RunFit');
 save(savePath,'fit');
 
-savePath=strcat(pwd,'/NNStacks/Run_Summary/RunAnglesFiltered.csv');
+savePath=strcat(pwd,'\',subFolderPath,'Run_Summary/RunAnglesFiltered.csv');
 csvwrite(savePath,runAnglesFiltered)
 
 hold off
@@ -231,13 +250,13 @@ hold off
 out=fit;
 
 end
-function writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered)
+function writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered,subFolderPath)
 
     numFrames=numel(stack_ds.Files); %number of frames for the movie
  
     
     for k=1:numFrames %loops through frames of stack
-        savePath=strcat(pwd,'/NNStacks/',name(1:end-5),'_NNAnalysis/',name(1:end-5),'_NNAnglesInserted.tif');
+        savePath=strcat(pwd,'\',subFolderPath,name(1:end-5),'_NNAnalysis\',name(1:end-5),'_NNAnglesInserted.tif');
         img=readimage(stack_ds,k); %reads image from split folder
         
         text=strcat(num2str(predsDouble(k)),' | ',num2str(round(maxScores(k),2))); %text that will be written
@@ -295,100 +314,105 @@ fitResult.sigma;
 
 end
 
-function run(net)
-    if exist('NNStacks/Run_Summary')==7 %Deletes run summary folder if already present
-    rmdir(strcat(pwd,'/NNStacks/Run_Summary'),'s')
-end
+function run(net,subFolderPath) %runs all nescessary steps to analyze stacks in a folder
 
-mkdir ('NNStacks', "Run_Summary") %makes Run Summary folder
-sumFileID=fopen(strcat(pwd,'/NNStacks/Run_Summary/','output.txt'),'w'); %open outputfile
+    disp('subFolderPath')
 
-[numStacks,folderNames]=splitStack(sumFileID); %splits stacks and prepares images for NN analysis
-
-disp('______________Stacks Analysed:_________________________')
-fprintf(sumFileID,'%s\n','______________Stacks Analysed:_________________________');
-
-path=strcat(pwd,'/NNStacks/');
-edges=[-180:5:180];
-runAnglesFiltered=[];
-clear data
-
-
-
-for i=1:numStacks
-    
-    name=folderNames{i}; %Name of file with "Split" appended to it
-    disp(strcat('>>> ',name(1:end-5),':'))
-    fprintf(sumFileID,'%s\n',strcat('>>> ',name(1:end-5),':'));
-    
-    stack_ds=imageDatastore(strcat(path,folderNames(i))); %creates imagedatastore fed to NN
-    [preds,scores] = classify(net,stack_ds); %Gets predictions and scores
-    
-    [predsDouble]=convertToDouble(preds); %converts from categorical to double
-    
-    % This next portion will remove predictions that have been categorized
-    % as "ignore" via a file
-    clear ignoredFrames 
-    
-    vars=char(who); %gets list of all variables as strings
-    if exist(strcat(name(1:end-5),'_ignore'))==1 % if ignore variable exists
-        eval(strcat('ignoredFrames=',name(1:end-5),'_ignore;')); %saves array as ignoredFrames
-        
-        disp(strcat('Ignore array found:',num2str(numel(ignoredFrames)),' frames ignored'))
-        fprintf(sumFileID,'%s\n',strcat('Ignore array found:',num2str(numel(ignoredFrames)),' frames ignored'));
-        
-        predsDouble(ignoredFrames)=NaN; %sets predictions for ignore frames to NaN
-    else
-        [predsDouble,ignoredFrames]=ignoreFramesFile(predsDouble,name,sumFileID); %checks/reads ignore frames file
+    if exist(strcat(subFolderPath,'Run_Summary'))==7 %Deletes run summary folder if already present
+        rmdir(strcat(pwd,'\',subFolderPath,'Run_Summary'),'s')
     end
 
-   
-    %Next section will filter out images with low (1.5std away) scores
-    clear predsFiltered
-    clear scoresFiltered
-    
-    [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPreds(predsDouble,scores,ignoredFrames,sumFileID);
-    
-    
-    %Following portion will save all important variables
-    saveFolder=strcat(name(1:end-5),'_NNAnalysis');
-    
-    if exist(strcat('NNStacks/',saveFolder))==7 %Deletes previous analysis folders
-        %disp("True")
-        %disp(saveFolder)
-        rmdir(strcat(pwd,'/NNStacks/',saveFolder),'s')
+    mkdir (subFolderPath, "Run_Summary") %makes Run Summary folder
+    sumFileID=fopen(strcat(pwd,'\',subFolderPath,'Run_Summary','\output.txt'),'w'); %open outputfile
+
+    [numStacks,folderNames]=splitStack(sumFileID,subFolderPath); %splits stacks and prepares images for NN analysis
+
+    disp('______________Stacks Analysed:_________________________')
+    fprintf(sumFileID,'%s\n','______________Stacks Analysed:_________________________');
+
+    path=strcat(pwd,'\',subFolderPath);
+    edges=[-180:5:180];
+    runAnglesFiltered=[];
+    clear data
+
+    for i=1:numStacks
+        
+        name=folderNames{i}; %Name of file with "Split" appended to it
+        disp(strcat('>>> ',name(1:end-5),':'))
+        fprintf(sumFileID,'%s\n',strcat('>>> ',name(1:end-5),':'));
+        
+        stack_ds=imageDatastore(strcat(path,folderNames(i))); %creates imagedatastore fed to NN
+        [preds,scores] = classify(net,stack_ds); %Gets predictions and scores using NN
+        
+        [predsDouble]=convertToDouble(preds); %converts from categorical to double
+        
+        % This next portion will remove predictions that have been categorized
+        % as "ignore" via a file
+        clear ignoredFrames 
+        
+        vars=char(who); %gets list of all variables in workspace as strings to check for ignore variables
+        if exist(strcat(name(1:end-5),'_ignore'))==1 % if ignore variable exists
+            eval(strcat('ignoredFrames=',name(1:end-5),'_ignore;')); %saves array of frames to ignore as ignoredFrames
+            
+            disp(strcat('Ignore array found:',num2str(numel(ignoredFrames)),' frames ignored'))
+            fprintf(sumFileID,'%s\n',strcat('Ignore array found:',num2str(numel(ignoredFrames)),' frames ignored'));
+            
+            predsDouble(ignoredFrames)=NaN; %sets predictions for ignored frames to NaN
+        else
+            [predsDouble,ignoredFrames]=ignoreFramesFile(predsDouble,name,sumFileID,subFolderPath); %checks/reads ignore frames file
+        end
+
+       
+        %Next section will filter out images with low (1.5std away) scores
+        clear predsFiltered
+        clear scoresFiltered
+        
+        [predsFiltered,scoresFiltered,scores,maxScores,framesFiltered]=filterPreds(predsDouble,scores,ignoredFrames,sumFileID);
+        
+        
+        %Following portion will save all important variables
+        saveFolder=strcat(name(1:end-5),'_NNAnalysis');
+        
+        if exist(strcat(subFolderPath,saveFolder))==7 %Deletes previous analysis folders
+            %disp("True")
+            %disp(saveFolder)
+            rmdir(strcat(pwd,'/',subFolderPath,saveFolder),'s')
+        end
+        
+        data.name{i}=name(1:end-5);
+        data.mba{i}=predsFiltered;
+        data.binned{i}=histcounts(predsFiltered,[0:10:180]);
+        
+     
+        mkdir (subFolderPath, saveFolder)
+        savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAngles.mat');
+        save(savePath,'predsDouble');
+        savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScores.mat');
+        save(savePath,'maxScores');
+        savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScoresFiltered.mat');
+        save(savePath,'scoresFiltered');
+        savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.mat');
+        save(savePath,'predsFiltered');
+        savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.csv');
+        csvwrite(savePath,predsFiltered)
+        
+        
+        saveHist(predsFiltered,name,saveFolder,path,sumFileID); %creates movie hist and saves it
+        
+        runAnglesFiltered=cat(2,runAnglesFiltered,predsFiltered);
+        
+        writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered,subFolderPath)
+        
+        rmdir(strcat(path,folderNames(i)),'s') %removes split folders
+        
     end
-    
-    data.name{i}=name(1:end-5);
-    data.mba{i}=predsFiltered;
-    data.binned{i}=histcounts(predsFiltered,[0:10:180]);
-    
- 
-    mkdir ('NNStacks', saveFolder)
-    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAngles.mat');
-    save(savePath,'predsDouble');
-    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScores.mat');
-    save(savePath,'maxScores');
-    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScoresFiltered.mat');
-    save(savePath,'scoresFiltered');
-    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.mat');
-    save(savePath,'predsFiltered');
-    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.csv');
-    csvwrite(savePath,predsFiltered)
-    
-    
-    saveHist(predsFiltered,name,saveFolder,path,sumFileID); %creates movie hist and saves it
-    
-    runAnglesFiltered=cat(2,runAnglesFiltered,predsFiltered);
-    
-    %writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered)
-    
-    %rmdir(strcat(pwd,'/NNStacks/',folderNames(i)),'s') %removes split folders
-    
-end
 
-fit=runHist(runAnglesFiltered); %creates and saves summary histogram
+    fit=runHist(runAnglesFiltered,subFolderPath); %creates and saves summary histogram
 
-savePath=strcat(path,'NN_nunchuck_data.mat');
-save(savePath,'data');
+    savePath=strcat(path,'NN_nunchuck_data.mat');
+    save(savePath,'data');
+
+    disp('________________Completed_______________________________')
+    fprintf(sumFileID,'%s\n','________________Completed_______________________________');
+
 end
