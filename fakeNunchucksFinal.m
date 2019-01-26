@@ -13,7 +13,7 @@ imshow(image)
 
 
 
-N=7000 %number of images per angle that will be made
+N=1000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
 
@@ -27,7 +27,7 @@ for i=1:numOfBins%numOfAngles
     imwrite(image,savePath); %writes image to right folder
     end
         
-    %bar display    
+    %progress bar display    
     clc
     bi=round((i/(numOfBins*2))*100);
     bar=repmat('|',1,bi);
