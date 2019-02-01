@@ -10,7 +10,7 @@
 clc
 tic
 
-net=nunchucknet9s;
+net=nunchucknet12s;
 
 fclose('all'); %closes opened files to prevent running into problems with rmdir
 
@@ -104,7 +104,7 @@ for i=1:numStacks
     
     runAnglesFiltered=cat(2,runAnglesFiltered,predsFiltered);
     
-    %writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered)
+    writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered)
     
     rmdir(strcat(pwd,'/NNStacks/',folderNames(i)),'s') %removes split folders
     

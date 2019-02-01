@@ -6,22 +6,22 @@ Things to change:
 
 
 %%
-nunAlex_ds=imageDatastore('FakeNunchuckImages','IncludeSubfolders',true,'LabelSource','foldernames');
+%nunAlex_ds=imageDatastore('VBFakeNunchuckImagesTest','IncludeSubfolders',true,'LabelSource','foldernames');
 
 %% 
 
-[smalltest,bigtest] = splitEachLabel(testImgs,0.5,'Randomize');
-preds=classify(nunchucknet9s,smalltest); 
-correctans=smalltest.Labels;
+%[smalltest,bigtest] = splitEachLabel(nunAlex_ds,0.05,'Randomize');
+preds=classify(nunchucknet12s,nunAlex_ds); 
+correctans=nunAlex_ds.Labels;
 results=(correctans==preds);
 numCorrect=sum(results==1);
 percentageCorrect=(numCorrect/numel(correctans))*100
 
 %% 
-
+figure
 groupOrder=[-177:5:0,2:5:177]; %order in which the groups will be displayed-must match var type
 groupOrder=categorical(groupOrder);
-[cmat,labels]=confusionmat(smalltest.Labels,preds,'Order',groupOrder);
+[cmat,labels]=confusionmat(nunAlex_ds.Labels,preds,'Order',groupOrder);
 heatmap(labels,labels,cmat);
 xlabel('Predicted Angles');
 ylabel('Correct Angles');
