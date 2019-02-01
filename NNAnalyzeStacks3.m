@@ -34,6 +34,39 @@ for i=1:length(subFolders)
     if length(dir(strcat('NNStacks/',subFolders(i).name,'/*.tif*')))==0 %skips folders that don't contain tif stacks
         continue
     end
+<<<<<<< HEAD
+=======
+    
+    data.name{i}=name(1:end-5);
+    data.mba{i}=predsFiltered;
+    data.binned{i}=histcounts(predsFiltered,[0:10:180]);
+    
+ 
+    mkdir ('NNStacks', saveFolder)
+    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAngles.mat');
+    save(savePath,'predsDouble');
+    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScores.mat');
+    save(savePath,'maxScores');
+    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNScoresFiltered.mat');
+    save(savePath,'scoresFiltered');
+    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.mat');
+    save(savePath,'predsFiltered');
+    savePath=strcat(path,saveFolder,'/',name(1:end-5),'_NNAnglesFiltered.csv');
+    csvwrite(savePath,predsFiltered)
+    
+    
+    saveHist(predsFiltered,name,saveFolder,path,sumFileID); %creates movie hist and saves it
+    
+    runAnglesFiltered=cat(2,runAnglesFiltered,predsFiltered);
+    
+    writeNewStacks(name,stack_ds,predsDouble,maxScores,framesFiltered)
+    
+    rmdir(strcat(pwd,'/NNStacks/',folderNames(i)),'s') %removes split folders
+    
+end
+
+fit=runHist(runAnglesFiltered); %creates and saves summary histogram
+>>>>>>> master
 
     subFolderPath=strcat('NNStacks\',subFolders(i).name,'\');
 
