@@ -27,7 +27,7 @@ for i=1:numOfBins%numOfAngles
     imwrite(image,savePath); %writes image to right folder
     end
         
-    %bar display    
+    %progress bar display    
     clc
     bi=round((i/(numOfBins*2))*100);
     bar=repmat('|',1,bi);
@@ -71,12 +71,14 @@ function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 
 center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
-%brightness=randi(50,'uint8')+uint8(90); %brightness for the first arm
-brightness=randi(195,'uint8')+uint8(60);
+brightness=randi(195,'uint8')+uint8(60);%brightness for the first arm
 image1=arm(image,angleArm,brightness,20,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
-brightness=brightness/2; %brightness for the second arm should be half of brighter arm
+brightness=double(brightness);
+brightness=normrnd(brightness/2,10); %picks second brightness usign a normal distribution
+brightness=uint8(brightness);
+%brightness=brightness/2; %brightness for the second arm should be half of brighter arm
 image2=arm(image,angleArm,brightness,20,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
