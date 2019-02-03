@@ -12,7 +12,7 @@ imshow(image)
 %}
 
 
-
+%{
 N=1000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
@@ -103,15 +103,15 @@ while luck==1
         %center=[79,79];
         luck=1;
         center=[round(200*rand),round(200*rand)]; %randomized center
-        while center(1)<120 && center(1)>80
+        while center(1)<nunCenter(1)+10 && center(1)>nunCenter(1)-10
             center(1)=round(200*rand); %randomized center
         end
-        while center(2)<120 && center(2)>80
+        while center(2)<nunCenter(2)+10 && center(2)>nunCenter(2)-10
             center(2)=round(200*rand); %randomized center
         end
         angleArm=findAngle(center,nunCenter)-350*rand-5;
         %image(center(2)-1:center(2)+1,center(1)-1:center(1)+1)=uint8(255);
-        brightness=100*rand+30;
+        brightness=225*rand+30;
         size=rand*15; %(originally 25)
         image=arm(image,angleArm,brightness,size,center);
     else
