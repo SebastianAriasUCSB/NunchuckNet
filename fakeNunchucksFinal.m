@@ -3,8 +3,8 @@ close
 
 tic
 
-%{
-angle=180*rand
+
+angle=0; %180*rand
 image=nunImage(angle);
 imshow(image)
 %imwrite(image,'D:/Documents/Research/Fygenson Lab Stuff/Post-Florida/NeuralNetworks/0tests/angletest.tif'); %writes image to right folder
@@ -13,7 +13,7 @@ imshow(image)
 
 
 %{
-N=1000 %number of images per angle that will be made
+N=10 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
 
@@ -56,9 +56,9 @@ image=zeros(200,'uint8'); %blank canavas for 8bit image
 
 image=backTube(image,center);
 
-image=diffusion(image); %applies diffusion to image in order to make it less jagged
+%image=diffusion(image); %applies diffusion to image in order to make it less jagged
 
-image=noise(image); %adds noise to image
+%image=noise(image); %adds noise to image
 
 image=reformatImages(image);
 
@@ -71,15 +71,18 @@ function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 
 center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
-brightness=randi(195,'uint8')+uint8(60);%brightness for the first arm
-image1=arm(image,angleArm,brightness,20,center); %draws first arm (originally 35)
+
+brightness1=randi(195,'uint8')+uint8(60);%brightness for the first(brighter arm) arm
+brightness=double(brightness1);
+brightness=normrnd(brightness/2,10); %picks second brightness usign a normal distribution
+brightness2=uint8(brightness);
+basebrightness=brightness2-0.8*rand*brightness2;
+
+image1=arm(image,angleArm,brightness1,20,center,basebrightness); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
-brightness=double(brightness);
-brightness=normrnd(brightness/2,10); %picks second brightness usign a normal distribution
-brightness=uint8(brightness);
 %brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,20,center); %creates the new arm at desired angle (originally 25)
+image2=arm(image,angleArm,brightness2,20,center,basebrightness); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
@@ -113,7 +116,7 @@ while luck==1
         %image(center(2)-1:center(2)+1,center(1)-1:center(1)+1)=uint8(255);
         brightness=225*rand+30;
         size=rand*15; %(originally 25)
-        image=arm(image,angleArm,brightness,size,center);
+        image=arm(image,angleArm,brightness,size,center,brightness);
     else
         luck=0;
 
@@ -248,7 +251,7 @@ end
 
 
 
-function out=arm(image,angleInitial,brightness,size,center) %Amber's arm function
+function out=arm(image,angleInitial,brightness,size,center,vertexBrightness) %Amber's arm function
 
 point=[0,0];%because we must start random walk from the center before we perform the rotation
 Length=70*rand+size; %size of arm-depending on input and random variable
@@ -307,6 +310,7 @@ else
     y=rotated_again(:,2)+center(2);
 end
 
+evalue=100; %1.8*rand+0.2; %value used in the exponetial that determines the arms initial brightness
 for i=1:n_steps 
     if i==1 %does not mark first point to create the characteristic void in the middle of the nunchuck
         continue
@@ -314,7 +318,15 @@ for i=1:n_steps
     if round(x(i))-1<1 || round(x(i))+1>200 || round(y(i))-1<1 || round(y(i))+1>200
         break
     end
-    image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightness);%marks a 2x2 area at next point with input brightness
+
+    %if brightness2==-1
+    %    image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightness);%marks a 2x2 area at next point with input brightness
+    %else
+        
+        brightnessLevel=(brightness-vertexBrightness)*(1-exp(-(evalue)*(i-1)))+vertexBrightness;
+        image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightnessLevel);%marks a 2x2 area at next point with input brightness
+    %end
+    
 end
 out=image;
 end
