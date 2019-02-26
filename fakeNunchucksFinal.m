@@ -3,7 +3,7 @@ close
 
 tic
 
-%{
+
 angle=180*rand
 image=nunImage(angle);
 imshow(image)
@@ -13,7 +13,7 @@ imshow(image)
 
 
 %{
-N=1000 %number of images per angle that will be made
+N=10000 %number of images per angle that will be made
 binSize=5 %angle bin size
 numOfBins=360/binSize %number of angles that 180 will be split into
 
@@ -52,7 +52,7 @@ image=zeros(200,'uint8'); %blank canavas for 8bit image
 
 %nunchuckAngle=180*rand
 
-[image,center]=nunchuck(image,nunchuckAngle); %creates a nunchuck on the image
+[image,center,arm_length1,arm_length2]=nunchuck(image,nunchuckAngle); %creates a nunchuck on the image
 
 image=backTube(image,center);
 
@@ -60,26 +60,26 @@ image=diffusion(image); %applies diffusion to image in order to make it less jag
 
 image=noise(image); %adds noise to image
 
-image=reformatImages(image);
+image=reformatImages(image,arm_length1,arm_length2);
 
 out=image;
 
 end
 
 
-function [out,center]=nunchuck(image,angleNun) %creates a nunchuch in the image/
+function [out,center,arm_length1,arm_length2]=nunchuck(image,angleNun) %creates a nunchuch in the image/
 
-center=[round(40*rand+80),round(40*rand+80)]; %randomized center (40x40 square)
+center=[round(100*rand+50),round(100*rand+50)]; %randomized center (40x40 square)
 angleArm=360*rand; %intial angle at which first arm will come out
 brightness=randi(195,'uint8')+uint8(60);%brightness for the first arm
-image1=arm(image,angleArm,brightness,20,center); %draws first arm (originally 35)
+[image1,arm_length1]=arm(image,angleArm,brightness,20,center); %draws first arm (originally 35)
 angleNun=180-angleNun; %switched how the angle is defined 
 angleArm=angleArm+angleNun; %angle of second arm according to nunchuck angle desired
 brightness=double(brightness);
 brightness=normrnd(brightness/2,10); %picks second brightness usign a normal distribution
 brightness=uint8(brightness);
 %brightness=brightness/2; %brightness for the second arm should be half of brighter arm
-image2=arm(image,angleArm,brightness,20,center); %creates the new arm at desired angle (originally 25)
+[image2,arm_length2]=arm(image,angleArm,brightness,20,center); %creates the new arm at desired angle (originally 25)
     %dimmer and shorter(most likely) -last two numbers-to recreate single labeled arm
     %image1(center(2)-20:center(2)+20,center(1)-20:center(1)+20)=uint8(50);
 out=image1+image2; %adds two images to create a superposition of the arms
@@ -121,7 +121,6 @@ while luck==1
     limit=limit/2;
 end
 %image(80:120,80:120)=uint8(100);
-num;
 out=image;
 
 end 
@@ -240,15 +239,24 @@ for i=1:numOfFolders
 end
 end
 
-function out=reformatImages(img)
+function out=reformatImages(img,arm_length1,arm_length2)
     img(201:227,201:227)=uint8(0);
+
+    len1=round(arm_length1+rand*0.4*arm_length1-0.2*arm_length1);
+    len2=round(arm_length2+rand*0.4*arm_length2-0.2*arm_length2);
+
+    %draw the bright arm horizontally
+    img(211:217,200-len1:200)=uint8(200);
+    
+    %draw the dim arm vertically
+    img(200-len2:200,211:217)=uint8(100);
+
     img = cat(3, img, img, img);
     out=img;
 end
 
 
-
-function out=arm(image,angleInitial,brightness,size,center) %Amber's arm function
+function [out,arm_length]=arm(image,angleInitial,brightness,size,center)
 
 point=[0,0];%because we must start random walk from the center before we perform the rotation
 Length=70*rand+size; %size of arm-depending on input and random variable
@@ -317,6 +325,8 @@ for i=1:n_steps
     image(round(y(i))-1:round(y(i))+1,round(x(i))-1:round(x(i))+1)=uint8(brightness);%marks a 2x2 area at next point with input brightness
 end
 out=image;
+
+arm_length=n_steps;
 end
 
 %}
